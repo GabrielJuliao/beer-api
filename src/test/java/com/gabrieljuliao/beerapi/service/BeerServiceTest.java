@@ -3,6 +3,7 @@ package com.gabrieljuliao.beerapi.service;
 import com.gabrieljuliao.beerapi.builder.BeerDTOBuilder;
 import com.gabrieljuliao.beerapi.dto.BeerDTO;
 import com.gabrieljuliao.beerapi.exception.BeerAlreadyRegisteredException;
+import com.gabrieljuliao.beerapi.exception.BeerNotFoundException;
 import com.gabrieljuliao.beerapi.mapper.BeerMapper;
 import com.gabrieljuliao.beerapi.model.Beer;
 import com.gabrieljuliao.beerapi.repository.BeerRepository;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class BeerServiceTest {
@@ -52,7 +54,7 @@ public class BeerServiceTest {
     }
 
     @Test
-    void whenInfomerdBeerIsAlreadyRegisteredThenItShouldThrowAnException() {
+    void whenGivenBeerIsAlreadyRegisteredThenItShouldThrowAnException() {
 //        given
         BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
         Beer duplicatedBeer = beerMapper.toModel(expectedBeerDTO);
@@ -61,5 +63,20 @@ public class BeerServiceTest {
 
         assertThrows(BeerAlreadyRegisteredException.class, () -> beerService.createBeer(expectedBeerDTO));
 
+    }
+
+    @Test
+    void whenValidBeerNameIsGivenThenReturnABeer() throws BeerNotFoundException {
+        // given
+        BeerDTO expectedFoundBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedFoundBeer = beerMapper.toModel(expectedFoundBeerDTO);
+
+        // when
+        when(beerRepository.findByName(expectedFoundBeer.getName())).thenReturn(Optional.of(expectedFoundBeer));
+
+        // then
+        BeerDTO foundBeerDTO = beerService.findByName(expectedFoundBeerDTO.getName());
+
+        assertThat(foundBeerDTO, is(equalTo(expectedFoundBeerDTO)));
     }
 }
