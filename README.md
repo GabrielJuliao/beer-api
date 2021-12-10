@@ -1,1 +1,1 @@
-# beer-api
+# beer-api + tests
